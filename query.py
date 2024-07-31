@@ -3,6 +3,9 @@ import subprocess
 import json
 from datetime import datetime, timedelta
 from prettytable import PrettyTable
+import requests
+from telegram import Bot
+import asyncio
 
 # 获取当前用户的主目录路径
 user_home = os.path.expanduser("~")
@@ -34,6 +37,8 @@ def log_query(total_rewards, query_time):
     query_log[query_time.isoformat()] = total_rewards
     with open(query_log_file, "w") as file:
         json.dump(query_log, file, indent=4)
+
+
 # 记录当前脚本开始查询的时间（不带时区信息）
 current_query_time = datetime.now()
 
@@ -151,13 +156,23 @@ seconds = time_difference.seconds % 60
 # 将时间差格式化为小时：分钟：秒的形式
 time_diff_formatted = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
+message=table.get_string()
 # 输出结果
-print("\n查询总结：")
-print(f"上次查询时间:{last_query_time.strftime('%Y-%m-%d %H:%M:%S')}  查询余额总和: {last_total_rewards:.8f} ORE")
-print(f"本次查询时间:{current_query_time.strftime('%Y-%m-%d %H:%M:%S')}  查询余额总和: {total_rewards:.8f} ORE")
-print(f"查询时间间隔: {time_diff_formatted}")
-print(f"查询总余额差异: {total_reward_difference:.8f} ORE")
-print(f"每秒预估收益: {total_per_second_earnings:.8f} ORE")
-print(f"每小时预估收益: {total_hourly_earnings:.8f} ORE")
-print(f"每日预估收益: {total_daily_earnings:.8f} ORE")
+message+="\n查询总结：\n" \
+f"上次查询时间:{last_query_time.strftime('%Y-%m-%d %H:%M:%S')}  查询余额总和: {last_total_rewards:.8f} ORE\n" \
+f"本次查询时间:{current_query_time.strftime('%Y-%m-%d %H:%M:%S')}  查询余额总和: {total_rewards:.8f} ORE\n" \
+f"查询时间间隔: {time_diff_formatted}\n" \
+f"查询总余额差异: {total_reward_difference:.8f} ORE\n" \
+f"每秒预估收益: {total_per_second_earnings:.8f} ORE\n" \
+f"每小时预估收益: {total_hourly_earnings:.8f} ORE\n" \
+f"每日预估收益: {total_daily_earnings:.8f} ORE"
+
+print(message)
+
+botToken = os.getenv('BOT_TOKEN')  
+bot = Bot(token = botToken)
+
+chat_id = os.getenv('CHAT_ID')  
+detail=table.get_string()
+asyncio.run(bot.send_message(chat_id=chat_id, text=message))
 
