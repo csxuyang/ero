@@ -14,8 +14,9 @@ user_home = os.path.expanduser("~")
 last_rewards_detail_file = "last_rewards_detail.json"
 last_query_time_file = "last_query_time.txt"  # 记录上次脚本开始查询的时间
 query_log_file = "query_log.json"  # 记录每次查询的总收益和时间
-RPC="https://api.devnet.solana.com"
+#RPC="https://api.devnet.solana.com"
 #RPC="https://api.mainnet-beta.solana.com"
+RPC="https://wallet.okex.org/fullnode/sol/discover/rpc"
 def load_last_rewards_detail():
     if os.path.exists(last_rewards_detail_file):
         try:
@@ -71,7 +72,7 @@ table = PrettyTable()
 table.field_names = ["钱包", "本次查询余额", "上次查询余额", "差异", "预计小时收益", "每日收益","SOL余额"]
 
 # 处理30个ID文件
-for i in range(0, 1):
+for i in range(0, 5):
     # 构造ID文件路径
     id_file = f"/root/id/id{i}.json"
 
