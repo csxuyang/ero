@@ -128,7 +128,7 @@ for i in range(0, 5):
     sol_balance = sol_balance.stdout.split()[0]
     
     last_sol = last_sol_detail.get(str(i), 0.0)
-    gas = float(last_sol) - sol_balance
+    gas = float(last_sol) - float(sol_balance)
     total_gas += gas
     
     # 添加到表格中
