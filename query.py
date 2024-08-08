@@ -12,6 +12,7 @@ user_home = os.path.expanduser("~")
 
 # 定义存储上次各ID奖励数额的文件路径
 last_rewards_detail_file = "last_rewards_detail.json"
+last_sol_detail_file = "last_sol_detail.json"
 last_query_time_file = "last_query_time.txt"  # 记录上次脚本开始查询的时间
 query_log_file = "query_log.json"  # 记录每次查询的总收益和时间
 #RPC="https://api.devnet.solana.com"
@@ -30,6 +31,19 @@ def save_last_rewards_detail(last_rewards_detail):
     with open(last_rewards_detail_file, "w") as file:
         json.dump(last_rewards_detail, file, indent=4)
 
+def load_last_sol_detail():
+    if os.path.exists(last_sol_detail_file):
+        try:
+            with open(last_sol_detail_file, "r") as file:
+                return json.load(file)
+        except json.decoder.JSONDecodeError:
+            print("错误：无法从 last_sol_detail_file 解码 JSON。返回默认值。")
+    return {"total_sol": 0.0}
+
+def save_last_sol_detail(last_sol_detail):
+    with open(last_sol_detail_file, "w") as file:
+        json.dump(last_sol_detail, file, indent=4)
+        
 def log_query(total_rewards, query_time):
     query_log = {}
     if os.path.exists(query_log_file):
@@ -64,12 +78,15 @@ start_time = datetime.now()
 
 # 初始化总奖励数额和上次总奖励数额
 total_rewards = 0.0
+total_gas = 0.0
 last_rewards_detail = load_last_rewards_detail()
 last_total_rewards = last_rewards_detail.get("total_rewards", 0.0)
+last_sol_detail = load_last_sol_detail()
+last_total_gas = last_sol_detail.get("total_gas", 0.0)
 
 # 创建表格对象
 table = PrettyTable()
-table.field_names = ["钱包", "本次查询余额", "上次查询余额", "差异", "预计小时收益", "每日收益","SOL余额"]
+table.field_names = ["钱包", "本次查询余额", "上次查询余额", "差异", "预计小时收益", "每日收益","SOL余额","gas"]
 
 # 处理30个ID文件
 for i in range(0, 5):
@@ -109,11 +126,17 @@ for i in range(0, 5):
     #SOL 余额
     sol_balance = subprocess.run(["solana", "balance",  "--keypair", id_file], capture_output=True, text=True)
     sol_balance = sol_balance.stdout.split()[0]
+    
+    last_sol = last_sol_detail.get(str(i), 0.0)
+    gas = last_sol - sol_balance
+    total_gas += gas
+    
     # 添加到表格中
-    table.add_row([f"ID {i}", f"{current_reward:.8f}", f"{last_reward:.8f}", f"{reward_difference:.8f}", f"{hourly_earnings:.8f}", f"{daily_earnings:.8f}",f"{sol_balance}"])
+    table.add_row([f"ID {i}", f"{current_reward:.8f}", f"{last_reward:.8f}", f"{reward_difference:.8f}", f"{hourly_earnings:.8f}", f"{daily_earnings:.8f}",f"{sol_balance}",,f"{total_gas}"])
 
     # 更新上次收益明细
     last_rewards_detail[str(i)] = current_reward
+    last_sol_detail[str(i)] = sol_balance
 
 # 计算总收益的差异和预计小时每日产量
 total_reward_difference = total_rewards - last_total_rewards
@@ -127,7 +150,7 @@ else:
 total_daily_earnings = total_hourly_earnings * 24
 
 # 添加总收益行到表格中
-table.add_row(["总收益", f"{total_rewards:.8f}", f"{last_total_rewards:.8f}", f"{total_reward_difference:.8f}", f"{total_hourly_earnings:.8f}", f"{total_daily_earnings:.8f}",""])
+table.add_row(["总收益", f"{total_rewards:.8f}", f"{last_total_rewards:.8f}", f"{total_reward_difference:.8f}", f"{total_hourly_earnings:.8f}", f"{total_daily_earnings:.8f}","",f"{total_gas:.8f}"])
 
 # 输出表格
 print("查询结果：")
@@ -136,8 +159,13 @@ print(table)
 # 记录本次运行总收益
 last_rewards_detail["total_rewards"] = total_rewards
 
+last_sol_detail["total_gas"] = total_gas + last_total_gas
+
+
 # 将当前各ID的奖励明细和总收益写入文件，以备下次运行时使用
 save_last_rewards_detail(last_rewards_detail)
+
+save_last_sol_detail(last_sol_detail)
 
 # 记录查询总收益和时间
 log_query(total_rewards, current_query_time)
@@ -164,9 +192,11 @@ f"上次查询时间:{last_query_time.strftime('%Y-%m-%d %H:%M:%S')}  查询余�
 f"本次查询时间:{current_query_time.strftime('%Y-%m-%d %H:%M:%S')}  查询余额总和: {total_rewards:.8f} ORE\n" \
 f"查询时间间隔: {time_diff_formatted}\n" \
 f"查询总余额差异: {total_reward_difference:.8f} ORE\n" \
+f"本次gas : {total_gas:.8f} SOL" \
 f"每秒预估收益: {total_per_second_earnings:.8f} ORE\n" \
 f"每小时预估收益: {total_hourly_earnings:.8f} ORE\n" \
-f"每日预估收益: {total_daily_earnings:.8f} ORE"
+f"每日预估收益: {total_daily_earnings:.8f} ORE" 
+
 
 print(message)
 
