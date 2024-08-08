@@ -134,7 +134,7 @@ for i in range(0, 5):
     total_gas += gas
     
     # 添加到表格中
-    table.add_row([f"ID {i}", f"{current_reward:.8f}", f"{last_reward:.8f}", f"{reward_difference:.8f}", f"{hourly_earnings:.8f}", f"{daily_earnings:.8f}",f"{sol_balance}",f"{total_gas}"])
+    table.add_row([f"ID {i}", f"{current_reward:.8f}", f"{last_reward:.8f}", f"{reward_difference:.8f}", f"{hourly_earnings:.8f}", f"{daily_earnings:.8f}",f"{sol_balance}",f"{gas}"])
 
     # 更新上次收益明细
     last_rewards_detail[str(i)] = current_reward
