@@ -194,7 +194,7 @@ f"上次查询时间:{last_query_time.strftime('%Y-%m-%d %H:%M:%S')}  查询余�
 f"本次查询时间:{current_query_time.strftime('%Y-%m-%d %H:%M:%S')}  查询余额总和: {total_rewards:.8f} ORE\n" \
 f"查询时间间隔: {time_diff_formatted}\n" \
 f"查询总余额差异: {total_reward_difference:.8f} ORE\n" \
-f"本次gas : {total_gas:.8f} SOL" \
+f"本次gas : {total_gas:.8f} SOL\n" \
 f"每秒预估收益: {total_per_second_earnings:.8f} ORE\n" \
 f"每小时预估收益: {total_hourly_earnings:.8f} ORE\n" \
 f"每日预估收益: {total_daily_earnings:.8f} ORE" 
